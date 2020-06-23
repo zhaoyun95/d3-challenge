@@ -37,7 +37,7 @@ console.log(chosenYAxis);
 function xScale(censusData, chosenXAxis) {
     // create scales
     var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(censusData, d => d[chosenXAxis]), d3.max(censusData, d => d[chosenXAxis])])
+      .domain([d3.min(censusData, d => d[chosenXAxis]) * 0.9, d3.max(censusData, d => d[chosenXAxis]) * 1.1])
       .range([0, width]);
     
     return xLinearScale;
@@ -47,7 +47,7 @@ function xScale(censusData, chosenXAxis) {
 function yScale(censusData, chosenYAxis) {
   // create scales
   var yLinearScale = d3.scaleLinear()
-    .domain([d3.min(censusData, d => d[chosenYAxis]), d3.max(censusData, d => d[chosenYAxis])])
+    .domain([d3.min(censusData, d => d[chosenYAxis]) * 0.9, d3.max(censusData, d => d[chosenYAxis]) * 1.1])
     .range([height, 0]);
   
   return yLinearScale;
@@ -112,24 +112,25 @@ function renderCirclesY(circlesGroup, textsGroup, newYScale, choenYAxis) {
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     console.log("in updateToolTip()")
 
-    var percentLabel = '%';
-
-    // only Poverty X-Axis is %
-    if (chosenXAxis != xAxisLabels[0]) {
-      percentLabel = '';
-    }
-
-    var xLabel = chosenXAxis;
-    var yLabel = chosenYAxis;
-    if (chosenYAxis == yAxisLabels[2]) {
-      yLabel = `Lacks Healthcare`;
-    }
-
     var toolTip = d3.tip()  // d3.tip() needs special library in index.html
       .attr("class", "tooltip")
       .offset([80, -60])
       .html(function(d) {
-          return (`${d.state}<br>${xLabel}: ${d[chosenXAxis]} ${percentLabel}<br>${yLabel}: ${d[chosenYAxis]}%`);
+          var xLabel = chosenXAxis;
+          var yLabel = chosenYAxis;
+          if (chosenYAxis == yAxisLabels[2]) {
+            yLabel = `Lacks Healthcare`;
+          };
+      
+          var xValue = d[chosenXAxis];
+          var yValue = `${d[chosenYAxis]}%`;
+          if (chosenXAxis ==  xAxisLabels[2] ) {
+            // currency format for income
+            xValue = `$ ${xValue.toLocaleString('en-US')}`; 
+          } else if (chosenXAxis == xAxisLabels[0]) {
+            xValue = `${xValue}%`;  // poverty needs % at the end
+          }
+          return (`${d.state}<br>${xLabel}: ${xValue}<br>${yLabel}: ${yValue}`);
       });
 
 
