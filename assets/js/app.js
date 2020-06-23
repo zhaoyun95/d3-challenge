@@ -103,21 +103,25 @@ function renderCirclesY(circlesGroup, newYScale, choenYAxis) {
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
     console.log("in updateToolTip()")
-    var label = `${chosenXAxis} ${chosenYAxis}`
 
-    // if (chosenXAxis == xAxisLabels[0]) {
-    //     label = xAxisLabels[0];
-    // } else if (chosenXAxis == xAxisLabels[1]) {
-    //     label = xAxisLabels[1];
-    // } else {
-    //     label = xAxisLabels[2];
-    // }
+    var percentLabel = '%';
+
+    // only Poverty X-Axis is %
+    if (chosenXAxis != xAxisLabels[0]) {
+      percentLabel = '';
+    }
+
+    var xLabel = chosenXAxis;
+    var yLabel = chosenYAxis;
+    if (chosenYAxis == yAxisLabels[2]) {
+      yLabel = `Lacks Healthcare`;
+    }
 
     var toolTip = d3.tip()  // d3.tip() needs special library in index.html
       .attr("class", "tooltip")
       .offset([80, -60]) // TO DO check if this is correct
       .html(function(d) {
-          return (`${label}`); // TO DO check requirements
+          return (`${d.state}<br>${xLabel}: ${d[chosenXAxis]} ${percentLabel}<br>${yLabel}: ${d[chosenYAxis]}%`);
       });
 
 
@@ -135,15 +139,13 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 }
 
 
-// generate random color
+// generate random color rgb(red,green,blue) 
 function getColor() {
-  console.log("in getColor()")
   var num1 = Math.floor(Math.random() * 256);
   var num2 = Math.floor(Math.random() * 256);
   var num3 = Math.floor(Math.random() * 256);
   var color = `rgb(${num1}, ${num2}, ${num3})`;
 
-  console.log(color);
   return color;
 }
 
@@ -192,7 +194,19 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
       .attr("r", 20)
       .attr("fill", d => getColor())
+      .attr("stroke","black")
       .attr("opacity", ".5");
+
+    // add text on top of each circle
+    // var textsGroup = chartGroup.selectAll("text")
+    //   .data(censusData)
+    //   .enter()
+    //   .append("text")
+    //   .attr("x", d => xLinearScale(d[chosenXAxis]) - 12)
+    //   .attr("y", d => yLinearScale(d[chosenYAxis]) + 6)
+    //   .attr("fill", "black")
+    //   .text(d => d.abbr);
+      
 
     // Create group for 3 x-axis labels
     var xLabelsGroup = chartGroup.append("g")
@@ -266,7 +280,7 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
         if (value !== chosenXAxis) {
           // replaces chosenXAxis with value
           chosenXAxis = value;
-          console.log(chosenXAxis);
+          console.log(`pick: ${chosenXAxis}`);
 
           // functions here found above csv import
           // update x scale for new data
@@ -316,55 +330,57 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
         }
       });
 
-      // y axis labels event listener
-      yLabelsGroup.selectAll("text")
-        .on("click", function() {
-          // get value of selection
-          var value = d3.select(this).attr("value");
-          if (value !== chosenYAxis) {
-            chosenYAxis = value;
-            yLinearScale = yScale(censusData, chosenYAxis);
-            yAxis = renderYAxes(yLinearScale, yAxis);
+    // y axis labels event listener
+    yLabelsGroup.selectAll("text")
+      .on("click", function() {
+        // get value of selection
+        var value = d3.select(this).attr("value");
+        if (value !== chosenYAxis) {
+          chosenYAxis = value;
+          console.log(`pick: ${chosenYAxis}`);
 
-            // update circles with new y values
-            circlesGroup = renderCirclesY(circlesGroup, yLinearScale, chosenYAxis);
+          yLinearScale = yScale(censusData, chosenYAxis);
+          yAxis = renderYAxes(yLinearScale, yAxis);
 
-            // update tooltips with new info
-            circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+          // update circles with new y values
+          circlesGroup = renderCirclesY(circlesGroup, yLinearScale, chosenYAxis);
 
-            if (chosenYAxis == yAxisLabels[0]) {
-              yObeseLabel
-                .classed("active", true)
-                .classed("inactive", false)
-              ySmokesLabel
-                .classed("active", false)
-                .classed("inactive", true)
-              yHealthcareLabel
-                .classed("active", false)
-                .classed("inactive", true)
-            } else if  (chosenYAxis == yAxisLabels[1]) {
-              yObeseLabel
-                .classed("active", false)
-                .classed("inactive", true)
-              ySmokesLabel
-                .classed("active", true)
-                .classed("inactive", false)
-              yHealthcareLabel
-                .classed("active", false)
-                .classed("inactive", true)
-            } else {
-              yObeseLabel
-                .classed("active", false)
-                .classed("inactive", true)
-              ySmokesLabel
-                .classed("active", false)
-                .classed("inactive", true)
-              yHealthcareLabel
-                .classed("active", true)
-                .classed("inactive", false)
-            }
+          // update tooltips with new info
+          circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
+
+          if (chosenYAxis == yAxisLabels[0]) {
+            yObeseLabel
+              .classed("active", true)
+              .classed("inactive", false)
+            ySmokesLabel
+              .classed("active", false)
+              .classed("inactive", true)
+            yHealthcareLabel
+              .classed("active", false)
+              .classed("inactive", true)
+          } else if  (chosenYAxis == yAxisLabels[1]) {
+            yObeseLabel
+              .classed("active", false)
+              .classed("inactive", true)
+            ySmokesLabel
+              .classed("active", true)
+              .classed("inactive", false)
+            yHealthcareLabel
+              .classed("active", false)
+              .classed("inactive", true)
+          } else {
+            yObeseLabel
+              .classed("active", false)
+              .classed("inactive", true)
+            ySmokesLabel
+              .classed("active", false)
+              .classed("inactive", true)
+            yHealthcareLabel
+              .classed("active", true)
+              .classed("inactive", false)
           }
-        });
+        }
+      });
 }).catch(function(error) {
     console.log(error);
 });
