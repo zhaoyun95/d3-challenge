@@ -119,7 +119,7 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
     var toolTip = d3.tip()  // d3.tip() needs special library in index.html
       .attr("class", "tooltip")
-      .offset([80, -60]) // TO DO check if this is correct
+      .offset([80, -60])
       .html(function(d) {
           return (`${d.state}<br>${xLabel}: ${d[chosenXAxis]} ${percentLabel}<br>${yLabel}: ${d[chosenYAxis]}%`);
       });
@@ -127,12 +127,16 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
 
     circlesGroup.call(toolTip);
 
-    circlesGroup.on("mouseover", function(data) {
-        toolTip.show(data);
+    circlesGroup.on("mouseover", function(d) {
+        toolTip.show(d);
+        // show border
+        d3.select(this).attr("stroke", "black");
       })
       // onmouseout event
-      .on("mouseout", function(data, index) {
-          toolTip.hide(data);
+      .on("mouseout", function(d) {
+          toolTip.hide(d);
+          // hide border
+          d3.select(this).attr("stroke", "");
       });
 
     return circlesGroup;
@@ -192,20 +196,20 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
       .append("circle")
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
-      .attr("r", 20)
+      .attr("r", 15)
       .attr("fill", d => getColor())
-      .attr("stroke","black")
+      .attr("stroke","white")
       .attr("opacity", ".5");
 
     // add text on top of each circle
-    // var textsGroup = chartGroup.selectAll("text")
-    //   .data(censusData)
-    //   .enter()
-    //   .append("text")
-    //   .attr("x", d => xLinearScale(d[chosenXAxis]) - 12)
-    //   .attr("y", d => yLinearScale(d[chosenYAxis]) + 6)
-    //   .attr("fill", "black")
-    //   .text(d => d.abbr);
+    var textsGroup = chartGroup.selectAll("text")
+      .data(censusData)
+      .enter()
+      .append("text")
+      .attr("x", d => xLinearScale(d[chosenXAxis]) - 12)
+      .attr("y", d => yLinearScale(d[chosenYAxis]) + 6)
+      .attr("fill", "black")
+      .text(d => d.abbr);
       
 
     // Create group for 3 x-axis labels
