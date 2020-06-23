@@ -79,22 +79,30 @@ function renderYAxes(newYScale, yAxis) {
 
 // function used for updating circles group with a transition to 
 // new circles due to X value changes
-function renderCirclesX(circlesGroup, newXScale, choenXAxis) {
+function renderCirclesX(circlesGroup, textsGroup, newXScale, choenXAxis) {
     console.log("in renderCirclesX()");
     circlesGroup.transition()
       .duration(1000)
       .attr("cx", d => newXScale(d[choenXAxis]));
+
+    textsGroup.transition()
+      .duration(1000)
+      .attr("x", d => newXScale(d[chosenXAxis]) - 8);
 
     return circlesGroup;
 }
 
 // function used for updating circles group with a transition to 
 // new circles due to Y value changes
-function renderCirclesY(circlesGroup, newYScale, choenYAxis) {
+function renderCirclesY(circlesGroup, textsGroup, newYScale, choenYAxis) {
   console.log("in renderCirclesY()");
   circlesGroup.transition()
     .duration(1000)
     .attr("cy", d => newYScale(d[choenYAxis]));
+
+  textsGroup.transition()
+    .duration(1000)
+    .attr("y", d => newYScale(d[choenYAxis]) + 4);
 
   return circlesGroup;
 }
@@ -189,28 +197,35 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
       // .attr("transform", `translate(${margin.left}, 0)`)
       .call(leftAxis);
 
-    // append initial circles
-    var circlesGroup = chartGroup.selectAll("circle")
-      .data(censusData)
-      .enter()
-      .append("circle")
+  
+    // define the data for the circles
+    var elem = chartGroup.selectAll("g circleAndText")
+      .data(censusData);
+
+    // create and place the "blocks" containing the circle and the text
+    var elemEnter = elem.enter()
+      .append("g")
+      .classed("circleAndText", true);
+     
+    // create the text for each block, before circles
+    elemEnter.append("text")
+      .classed("stateText", true)
+      .attr("x", d => xLinearScale(d[chosenXAxis]) - 8)
+      .attr("y", d => yLinearScale(d[chosenYAxis]) + 4)
+      .text(d => d.abbr);
+
+    // create the circle for each block, on top of stateText
+    elemEnter.append("circle")
+      .attr("r", 15)
       .attr("cx", d => xLinearScale(d[chosenXAxis]))
       .attr("cy", d => yLinearScale(d[chosenYAxis]))
-      .attr("r", 15)
       .attr("fill", d => getColor())
       .attr("stroke","white")
-      .attr("opacity", ".5");
+      .attr("opacity", ".5"); // set 0.5 opacity so that we can see stateText behind it.
 
-    // add text on top of each circle
-    var textsGroup = chartGroup.selectAll("text")
-      .data(censusData)
-      .enter()
-      .append("text")
-      .attr("x", d => xLinearScale(d[chosenXAxis]) - 12)
-      .attr("y", d => yLinearScale(d[chosenYAxis]) + 6)
-      .attr("fill", "black")
-      .text(d => d.abbr);
-      
+
+    var circlesGroup = elemEnter.selectAll("circle");
+    var textsGroup = elemEnter.selectAll("text")
 
     // Create group for 3 x-axis labels
     var xLabelsGroup = chartGroup.append("g")
@@ -294,7 +309,7 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
           xAxis = renderXAxes(xLinearScale, xAxis);
 
           // updates circles with new x values
-          circlesGroup = renderCirclesX(circlesGroup, xLinearScale, chosenXAxis);
+          circlesGroup = renderCirclesX(circlesGroup, textsGroup, xLinearScale, chosenXAxis);
 
           // updates tooltips with new info
           circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
@@ -347,7 +362,7 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
           yAxis = renderYAxes(yLinearScale, yAxis);
 
           // update circles with new y values
-          circlesGroup = renderCirclesY(circlesGroup, yLinearScale, chosenYAxis);
+          circlesGroup = renderCirclesY(circlesGroup, textsGroup, yLinearScale, chosenYAxis);
 
           // update tooltips with new info
           circlesGroup = updateToolTip(chosenXAxis, chosenYAxis, circlesGroup);
