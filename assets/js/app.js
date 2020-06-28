@@ -87,7 +87,7 @@ function renderCirclesX(circlesGroup, textsGroup, newXScale, choenXAxis) {
 
     textsGroup.transition()
       .duration(1000)
-      .attr("x", d => newXScale(d[chosenXAxis]) - 8);
+      .attr("x", d => newXScale(d[chosenXAxis]));
 
     return circlesGroup;
 }
@@ -102,7 +102,7 @@ function renderCirclesY(circlesGroup, textsGroup, newYScale, choenYAxis) {
 
   textsGroup.transition()
     .duration(1000)
-    .attr("y", d => newYScale(d[choenYAxis]) + 4);
+    .attr("y", d => newYScale(d[choenYAxis]));
 
   return circlesGroup;
 }
@@ -140,12 +140,14 @@ function updateToolTip(chosenXAxis, chosenYAxis, circlesGroup) {
         toolTip.show(d);
         // show border
         d3.select(this).attr("stroke", "black");
+        d3.select(this).attr("opacity", ".7");
       })
       // onmouseout event
       .on("mouseout", function(d) {
           toolTip.hide(d);
           // hide border
           d3.select(this).attr("stroke", "");
+          d3.select(this).attr("opacity", ".5");
       });
 
     return circlesGroup;
@@ -211,8 +213,9 @@ d3.csv("assets/data/data.csv").then(function(censusData, err) {
     // create the text for each block, before circles
     elemEnter.append("text")
       .classed("stateText", true)
-      .attr("x", d => xLinearScale(d[chosenXAxis]) - 8)
-      .attr("y", d => yLinearScale(d[chosenYAxis]) + 4)
+      .attr("x", d => xLinearScale(d[chosenXAxis]))
+      .attr("y", d => yLinearScale(d[chosenYAxis]))
+      .attr("text-anchor", "middle")
       .text(d => d.abbr);
 
     // create the circle for each block, on top of stateText
